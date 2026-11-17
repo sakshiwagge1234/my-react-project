@@ -4,7 +4,7 @@ import "./App.css";
 function App() {
   const [activeTab, setActiveTab] = useState("Home");
 
-  const [profile, setProfile] = useState(() => {
+    const [profile, setProfile] = useState(() => {
     return JSON.parse(localStorage.getItem("cofounderProfile")) || {
       name: "",
       email: "",
@@ -16,7 +16,6 @@ function App() {
       preferredSkills: ""
     };
   });
-
   const [saved, setSaved] = useState(false);
 
   const menu = [
@@ -63,9 +62,8 @@ function App() {
               {item}
             </button>
           ))}
-        </div>
+                </div>
       </nav>
-
       {activeTab === "Home" && (
         <section className="hero">
           <span className="badge">
@@ -198,17 +196,99 @@ function App() {
           </div>
         </section>
       )}
+{activeTab === "AI Matching" && (
+  <section className="content">
+    <h1>🤖 AI Teammate Matching</h1>
 
-      {activeTab === "AI Matching" && (
-        <section className="content">
-          <h1>AI Teammate Matching</h1>
-          <p>Find people with complementary skills and shared interests.</p>
-          <div className="card">
-            <h2>Smart Matching Engine</h2>
-            <p>Our matching algorithm is coming next!</p>
+    <p>Find your perfect teammates based on skills and interests.</p>
+
+    {!profile.name ? (
+      <div className="card">
+        <h2>Create your profile first!</h2>
+        <button onClick={() => setActiveTab("My Profile")}>
+          Create Profile
+        </button>
+      </div>
+    ) : (
+      <div className="cards">
+        {[
+          {
+            name: "Alex Morgan",
+            role: "Frontend Developer",
+            skills: "React, JavaScript, CSS",
+            interests: "Web Development, AI, Startups"
+          },
+          {
+            name: "Sarah Johnson",
+            role: "UI/UX Designer",
+            skills: "Figma, HTML, CSS",
+            interests: "Design, Startups, Technology"
+          },
+          {
+            name: "David Smith",
+            role: "Backend Developer",
+            skills: "Python, Node.js, MongoDB",
+            interests: "AI, Web Development, Startups"
+          },
+          {
+            name: "Emma Wilson",
+            role: "AI Developer",
+            skills: "Python, Machine Learning, Java",
+            interests: "AI, Robotics, Technology"
+          }
+        ].map((person) => {
+          const userSkills = (profile.skills || "").toLowerCase().split(",");
+          const wantedSkills = (profile.preferredSkills || "").toLowerCase().split(",").filter(s => s.trim());
+          const candidateSkills = person.skills.toLowerCase().split(",").map(s => s.trim());
+
+          const interests = (profile.interests || "").toLowerCase().split(",").filter(s => s.trim());
+          const candidateInterests = person.interests.toLowerCase().split(",").map(s => s.trim());
+
+          const skillMatch = wantedSkills.length
+            ? candidateSkills.filter(s => wantedSkills.some(w => s.includes(w.trim()) || w.trim().includes(s))).length / wantedSkills.length
+            : 0;
+
+          const interestMatch = interests.length
+            ? interests.filter(i => candidateInterests.some(c => c.includes(i.trim()) || i.trim().includes(c))).length / interests.length
+            : 0;
+
+          const complementarySkills = candidateSkills.filter(
+            s => !userSkills.some(u => u.trim() === s)
+          ).length / candidateSkills.length;
+
+          const score = Math.round(
+            skillMatch * 50 +
+            interestMatch * 30 +
+            complementarySkills * 20
+          );
+
+          return { ...person, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .map(person => (
+          <div className="card" key={person.name}>
+            <h2>{person.name}</h2>
+            <h4>{person.role}</h4>
+
+            <p>Skills: {person.skills}</p>
+            <p>Interests: {person.interests}</p>
+
+            <h2>{person.score}% Match</h2>
+
+            <div className="match-bar">
+              <div style={{ width: `${person.score}%` }}></div>
+            </div>
+
+            <button onClick={() => alert(`Connection request sent to ${person.name}!`)}>
+              Connect
+            </button>
           </div>
-        </section>
-      )}
+        ))}
+      </div>
+    )}
+  </section>
+)}
+      
 
       {activeTab === "Dashboard" && (
         <section className="content">
